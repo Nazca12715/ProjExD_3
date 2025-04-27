@@ -160,6 +160,36 @@ class Score:
         screen.blit(self.img, self.rct)
 
 
+class Explosion:
+    """
+    爆発エフェクトクラス
+    """
+    def __init__(self, center: tuple[int,int], life: int = 20):
+        """
+        center: 爆発を表示する座標 (爆弾の中心)
+        life: フレーム単位の表示時間
+        """
+        # 元画像と左右反転画像を用意
+        img0 = pg.image.load("fig/explosion.gif")
+        img1 = pg.transform.flip(img0, True, False)
+        self.surfs = [img0, img1]
+
+        # Rectとcenterを設定
+        self.rct = img0.get_rect()
+        self.rct.center = center
+
+        self.life = life
+
+    def update(self, screen: pg.Surface):
+        """
+        life > 0 なら交互に画像を描画し、lifeを減少。
+        """
+        if self.life > 0:
+            surf = self.surfs[(self.life // 5) % 2]
+            screen.blit(surf, self.rct)
+            self.life -= 1
+
+
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
@@ -167,6 +197,7 @@ def main():
     bird = Bird((300, 200))
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     beams: list[Beam] = [] 
+    explosions: list[Explosion] = []
     score = Score()
     clock = pg.time.Clock()
     tmr = 0
@@ -205,16 +236,20 @@ def main():
                     score.score += 1
                     bird.change_img(6, screen)  # 喜ぶエフェクトを切り替え，1秒間表示させる
                     pg.display.update()
-                    time.sleep(1)
+                    explosions.append(Explosion(b.rct.center))
                     break
         
+        # リスト更新
         bombs = [b for b in bombs if b is not None]
         beams = [ b for b in beams 
             if b is not None and check_bound(b.rct) == (True, True)
         ]
+        explosions = [e for e in explosions if e.life > 0]
 
         for b in bombs:
             b.update(screen)
+        for e in explosions:
+            e.update(screen)
 
         score.update(screen)
         pg.display.update()
