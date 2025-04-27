@@ -95,8 +95,8 @@ class Beam:
          """
          self.img = pg.image.load(f"fig/beam.png")
          self.rct = self.img.get_rect()
-         self.rct.center = Bird.rct.center
-         self.rct.left = Bird.rct.right
+         self.rct.centery = bird.rct.centery
+         self.rct.left = bird.rct.right
          self.vx, self.vy = +5, 0
 
      def update(self, screen: pg.Surface):
@@ -146,6 +146,7 @@ def main():
     bg_img = pg.image.load("fig/pg_bg.jpg")
     bird = Bird((300, 200))
     bomb = Bomb((255, 0, 0), 10)
+    beam = None
     clock = pg.time.Clock()
     tmr = 0
     while True:
@@ -170,10 +171,12 @@ def main():
             beam.update(screen)  
         if bomb is not None: 
             bomb.update(screen)
-        if beam is not None and bomb is not None:
-            if beam.rct.collidedict(bomb.rct):
+        if beam is not None and bomb is not None and beam.rct.colliderect(bomb.rct):
                 beam = None
                 bomb = None
+                bird.change_img(6, screen)  # 喜ぶエフェクトを切り替え，1秒間表示させる
+                pg.display.update()
+                time.sleep(1)
         pg.display.update()
         tmr += 1
         clock.tick(50)
