@@ -166,7 +166,7 @@ def main():
     bg_img = pg.image.load("fig/pg_bg.jpg")
     bird = Bird((300, 200))
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
-    beam = None
+    beams: list[Beam] = [] 
     score = Score()
     clock = pg.time.Clock()
     tmr = 0
@@ -176,7 +176,7 @@ def main():
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                  # スペースキー押下でBeamクラスのインスタンス生成
-                 beam = Beam(bird)            
+                 beams.append(Beam(bird))        
         screen.blit(bg_img, [0, 0])
         
         for b in bombs:
@@ -191,17 +191,17 @@ def main():
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
-        if beam is not None:
+        for beam in beams:
             beam.update(screen)  
 
         # ビームと爆弾衝突
-        if beam is not None:
-            for i, b in enumerate(bombs):
-                if beam is None:
-                    break
+        for bi, beam in enumerate(beams):
+            if beam is None:
+                continue
+            for bj, bomb in enumerate(bombs):
                 if beam.rct.colliderect(b.rct):
-                    beam = None
-                    bombs[i] = None
+                    beams[bi] = None  # 衝突したビームを消去
+                    bombs[bj] = None  # 衝突した爆弾を消去
                     score.score += 1
                     bird.change_img(6, screen)  # 喜ぶエフェクトを切り替え，1秒間表示させる
                     pg.display.update()
@@ -209,6 +209,10 @@ def main():
                     break
         
         bombs = [b for b in bombs if b is not None]
+        beams = [ b for b in beams 
+            if b is not None and check_bound(b.rct) == (True, True)
+        ]
+
         for b in bombs:
             b.update(screen)
 
