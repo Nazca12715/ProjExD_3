@@ -250,8 +250,8 @@ def main():
         
         # リスト更新
         bombs = [b for b in bombs if b is not None]
-        beams = [ b for b in beams 
-            if b is not None and check_bound(b.rct) == (True, True)
+        beams = [ beam for beam in beams 
+            if beam is not None and check_bound(beam.rct) == (True, True)
         ]
         explosions = [e for e in explosions if e.life > 0]
 
